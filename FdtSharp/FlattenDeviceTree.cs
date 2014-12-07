@@ -19,7 +19,7 @@ namespace FdtSharp
 		public uint Version { get; private set; }
 		public uint LastCompatibleVersion { get; private set; }
 		public uint BootCPUPhysicalId { get; set; }
-		public TreeNode Root { get; private set; }
+		public TreeNode Root { get; set; }
 
 		public ICollection<ReservationBlock> ReservationBlocks { get; private set; }
 
@@ -34,7 +34,13 @@ namespace FdtSharp
 			LastCompatibleVersion = Utilities.ReadUintBigEndian(treeData, 24);
 			BootCPUPhysicalId = Utilities.ReadUintBigEndian(treeData, 28);
 
-			// TODO: check for total size vs array size
+			var totalSize = Utilities.ReadUintBigEndian(treeData, 4);
+			if(treeData.Length < totalSize)
+			{
+				throw new NotImplementedException(
+					string.Format("Given array is only {0} bytes long while the whole structure needs {1} bytes.", treeData.Length, totalSize));
+			}
+
 			var stringsOffset = (int)Utilities.ReadUintBigEndian(treeData, 12);
 			var stringsSize = (int)Utilities.ReadUintBigEndian(treeData, 32);
 			var stringsData = new ArraySegment<byte>(treeData, stringsOffset, stringsSize);
@@ -44,8 +50,8 @@ namespace FdtSharp
 			ReadMemoryReservationBlocks(treeData, reservationBlockOffset);
 
 			var structureOffset = (int)Utilities.ReadUintBigEndian(treeData, 8);
-			// TODO: check with tree size
-			ReadStructureData(treeData, structureOffset, stringHelper);
+			var maximalStructureOffset = structureOffset + (int)Utilities.ReadUintBigEndian(treeData, 36);
+			ReadStructureData(treeData, structureOffset, stringHelper, maximalStructureOffset);
 		}
 
 		private void ReadMemoryReservationBlocks(byte[] treeData, int reservationBlockOffset)
@@ -64,12 +70,11 @@ namespace FdtSharp
 			}
 		}
 
-		private void ReadStructureData(byte[] treeData, int structureOffset, StringHelper stringHelper)
+		private void ReadStructureData(byte[] treeData, int structureOffset, StringHelper stringHelper, int maximalOffset)
 		{
 			var currentOffset = structureOffset;
 			while(true)
 			{
-				// TODO: padding
 				var token = ReadToken(treeData, currentOffset);
 				switch(token)
 				{
@@ -86,6 +91,10 @@ namespace FdtSharp
 				Root.Name = nodeName;
 				Pad(ref currentOffset);
 				ParseNode(Root, treeData, ref currentOffset, stringHelper);
+				if(currentOffset > maximalOffset)
+				{
+					throw new InvalidOperationException("Too much data read while parsing tree nodes.");
+				}
 			}
 		}
 
