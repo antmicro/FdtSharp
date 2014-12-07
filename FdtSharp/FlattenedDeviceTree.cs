@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace FdtSharp
 {
-	public sealed class FlattenDeviceTree
+	public sealed class FlattenedDeviceTree
 	{
-		public FlattenDeviceTree()
+		public FlattenedDeviceTree()
 		{
 			ReservationBlocks = new List<ReservationBlock>();
 			Version = 17;
@@ -13,7 +13,7 @@ namespace FdtSharp
 			Root = new TreeNode();
 		}
 
-		public FlattenDeviceTree(byte[] treeData) : this()
+		public FlattenedDeviceTree(byte[] treeData) : this()
 		{
 			ReadTree(treeData);
 		}

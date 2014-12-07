@@ -12,7 +12,7 @@ namespace FdtSharpWithTests
 		[Test]
 		public void ShouldReadHeader()
 		{
-			var fdt = new FlattenDeviceTree(File.ReadAllBytes(Utilities.GetBinaryLocation("xilinx_zynq_iic.dtb")));
+			var fdt = new FlattenedDeviceTree(File.ReadAllBytes(Utilities.GetBinaryLocation("xilinx_zynq_iic.dtb")));
 			Assert.AreEqual(17, fdt.Version);
 			Assert.AreEqual(16, fdt.LastCompatibleVersion);
 		}
@@ -20,7 +20,7 @@ namespace FdtSharpWithTests
 		[Test]
 		public void ShouldReadReservationBlocks()
 		{
-			var fdt = new FlattenDeviceTree(File.ReadAllBytes(Utilities.GetBinaryLocation("xilinx_zynq_iic.dtb")));
+			var fdt = new FlattenedDeviceTree(File.ReadAllBytes(Utilities.GetBinaryLocation("xilinx_zynq_iic.dtb")));
 			Assert.AreEqual(0, fdt.ReservationBlocks.Count);
 		}
 
@@ -47,7 +47,7 @@ namespace FdtSharpWithTests
 				"tft@6C000000"
 			};
 
-			var fdt = new FlattenDeviceTree(File.ReadAllBytes(Utilities.GetBinaryLocation("xilinx_zynq_iic.dtb")));
+			var fdt = new FlattenedDeviceTree(File.ReadAllBytes(Utilities.GetBinaryLocation("xilinx_zynq_iic.dtb")));
 			var descendants = fdt.Root.Descendants;
 			CollectionAssert.AreEquivalent(expectedNodeNames, descendants.Select(x => x.Name));
 		}
@@ -55,7 +55,7 @@ namespace FdtSharpWithTests
 		[Test]
 		public void ShouldFindProperty()
 		{
-			var fdt = new FlattenDeviceTree(File.ReadAllBytes(Utilities.GetBinaryLocation("xilinx_zynq_iic.dtb")));
+			var fdt = new FlattenedDeviceTree(File.ReadAllBytes(Utilities.GetBinaryLocation("xilinx_zynq_iic.dtb")));
 			var model = fdt.Root.Properties.First(x => x.Name == "model").GetDataAsString();
 			Assert.AreEqual("Enclustra MARS ZX3", model);
 		}
