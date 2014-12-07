@@ -38,7 +38,8 @@
     <Compile Include="Token.cs" />
     <Compile Include="Property.cs" />
     <Compile Include="TreeNode.cs" />
-    <Compile Include="StringHelper.cs" />
+    <Compile Include="StringReader.cs" />
+    <Compile Include="StringWriter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

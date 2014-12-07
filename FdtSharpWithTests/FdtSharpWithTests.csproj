@@ -36,6 +36,7 @@
   <ItemGroup>
     <Compile Include="Utilities.cs" />
     <Compile Include="ReadingTests.cs" />
+    <Compile Include="WritingTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

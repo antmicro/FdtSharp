@@ -2,9 +2,9 @@
 
 namespace FdtSharp
 {
-	internal sealed class StringHelper
+	internal sealed class StringReader
 	{
-		public StringHelper(ArraySegment<byte> data)
+		public StringReader(ArraySegment<byte> data)
 		{
 			this.data = data;
 		}

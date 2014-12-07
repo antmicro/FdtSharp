@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace FdtSharp
 {
@@ -24,6 +26,36 @@ namespace FdtSharp
 		public TreeNode Root { get; set; }
 		public ICollection<ReservationBlock> ReservationBlocks { get; private set; }
 
+		public byte[] GetBinaryBlob()
+		{
+			var stringWriter = new StringWriter();
+			var treeStructure = new List<byte>();
+			WriteTreeNode(treeStructure, Root, stringWriter, true);
+			var reservationBlocks = WriteReservationBlocks();
+			var stringData = stringWriter.Result;
+			var originalStringDataLength = stringData.Count;
+			Pad(stringData);
+
+			var result = new List<byte>();
+			result.AddRange(Magic.BigEndian());
+			var totalSize = HeaderSize + reservationBlocks.Count + treeStructure.Count + stringData.Count;
+			result.AddRange(((uint)totalSize).BigEndian());
+			result.AddRange(((uint)(HeaderSize + reservationBlocks.Count)).BigEndian());
+			result.AddRange(((uint)(HeaderSize + reservationBlocks.Count + treeStructure.Count)).BigEndian());
+			result.AddRange(((uint)HeaderSize).BigEndian());
+			result.AddRange(Version.BigEndian());
+			result.AddRange(LastCompatibleVersion.BigEndian());
+			result.AddRange(BootCPUPhysicalId.BigEndian());
+			result.AddRange(((uint)originalStringDataLength).BigEndian());
+			result.AddRange(((uint)treeStructure.Count).BigEndian());
+
+			result.AddRange(reservationBlocks);
+			result.AddRange(treeStructure);
+			result.AddRange(stringData);
+
+			return result.ToArray();
+		}
+
 		private void ReadTree(byte[] treeData)
 		{
 			var magic = Utilities.ReadUintBigEndian(treeData, 0);
@@ -45,7 +77,7 @@ namespace FdtSharp
 			var stringsOffset = (int)Utilities.ReadUintBigEndian(treeData, 12);
 			var stringsSize = (int)Utilities.ReadUintBigEndian(treeData, 32);
 			var stringsData = new ArraySegment<byte>(treeData, stringsOffset, stringsSize);
-			var stringHelper = new StringHelper(stringsData);
+			var stringHelper = new StringReader(stringsData);
 
 			var reservationBlockOffset = (int)Utilities.ReadUintBigEndian(treeData, 16);
 			ReadMemoryReservationBlocks(treeData, reservationBlockOffset);
@@ -71,7 +103,7 @@ namespace FdtSharp
 			}
 		}
 
-		private void ReadStructureData(byte[] treeData, int structureOffset, StringHelper stringHelper, int maximalOffset)
+		private void ReadStructureData(byte[] treeData, int structureOffset, StringReader stringHelper, int maximalOffset)
 		{
 			var currentOffset = structureOffset;
 			while(true)
@@ -99,7 +131,7 @@ namespace FdtSharp
 			}
 		}
 
-		private void ParseNode(TreeNode treeNode, byte[] treeData, ref int currentOffset, StringHelper stringHelper)
+		private void ParseNode(TreeNode treeNode, byte[] treeData, ref int currentOffset, StringReader stringHelper)
 		{
 			while(true)
 			{
@@ -135,12 +167,58 @@ namespace FdtSharp
 					throw new InvalidOperationException(string.Format("Unexpected token {0} during node parsing.", token));
 				}
 			}
+		}
 
+		private void WriteTreeNode(List<byte> result, TreeNode node, StringWriter stringWriter, bool isRoot)
+		{
+			result.AddRange(((uint)Token.BeginNode).BigEndian());
+			var nrt = node.Name.NullTerminated();
+			result.AddRange(nrt);
+			Pad(result);
+
+			foreach(var property in node.Properties)
+			{
+				result.AddRange(((uint)Token.Property).BigEndian());
+				result.AddRange(((uint)property.Data.Count).BigEndian());
+				var index = (uint)stringWriter.PutString(property.Name);
+				result.AddRange(index.BigEndian());
+				result.AddRange(property.Data);
+				Pad(result);
+			}
+
+			foreach(var subnode in node.Subnodes)
+			{
+				WriteTreeNode(result, subnode, stringWriter, false);
+			}
+
+			result.AddRange(((uint)Token.EndNode).BigEndian());
+			if(isRoot)
+			{
+				result.AddRange(((uint)Token.End).BigEndian());
+			}
+		}
+
+		private List<byte> WriteReservationBlocks()
+		{
+			var result = new List<byte>();
+			foreach(var entry in ReservationBlocks.Union( new [] { default(ReservationBlock) }))
+			{
+				result.AddRange(entry.Address.BigEndian());
+				result.AddRange(entry.Size.BigEndian());
+			}
+			return result;
 		}
 
 		private static void Pad(ref int value)
 		{
 			value = 4 * (value / 4) + ((value % 4 > 0) ? 4 : 0);
+		}
+
+		private static void Pad(List<byte> list)
+		{
+			var length = list.Count;
+			Pad(ref length);
+			list.AddRange(Enumerable.Repeat((byte)0, length - list.Count));
 		}
 
 		private static Token ReadToken(byte[] data, int offset)
@@ -149,6 +227,7 @@ namespace FdtSharp
 		}
 
 		private const uint Magic = 0xd00dfeed;
+		private const int HeaderSize = 40;
 	}
 }
 

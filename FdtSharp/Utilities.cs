@@ -32,6 +32,24 @@ namespace FdtSharp
 			}
 			throw new InvalidOperationException("Encountered never ending string.");
 		}
+
+		public static byte[] NullTerminated(this string str)
+		{
+			var encoded = Encoding.UTF8.GetBytes(str);
+			var result = new byte[encoded.Length + 1];
+			Array.Copy(encoded, result, encoded.Length);
+			return result;
+		}
+
+		public static byte[] BigEndian(this uint value)
+		{
+			return BitConverter.GetBytes(unchecked((uint)IPAddress.NetworkToHostOrder((int)value)));
+		}
+
+		public static byte[] BigEndian(this ulong value)
+		{
+			return BitConverter.GetBytes(unchecked((ulong)IPAddress.NetworkToHostOrder((long)value)));
+		}
 	}
 }
 
