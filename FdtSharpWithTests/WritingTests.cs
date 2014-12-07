@@ -11,7 +11,7 @@ namespace FdtSharpWithTests
 		[Test]
 		public void ShouldRewriteProperTree()
 		{
-			var fdt = new FlattenDeviceTree(File.ReadAllBytes(Utilities.GetBinaryLocation("xilinx_zynq_iic.dtb")));
+			var fdt = new FlattenedDeviceTree(File.ReadAllBytes(Utilities.GetBinaryLocation("xilinx_zynq_iic.dtb")));
 			fdt.GetBinaryBlob();
 		}
 	}
