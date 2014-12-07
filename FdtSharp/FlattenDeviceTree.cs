@@ -8,6 +8,7 @@ namespace FdtSharp
 		public FlattenDeviceTree()
 		{
 			ReservationBlocks = new List<ReservationBlock>();
+
 		}
 
 		public FlattenDeviceTree(byte[] treeData) : this()
@@ -17,7 +18,8 @@ namespace FdtSharp
 
 		public uint Version { get; private set; }
 		public uint LastCompatibleVersion { get; private set; }
-		public uint BootCPUPhysicalId { get; private set; }
+		public uint BootCPUPhysicalId { get; set; }
+		public TreeNode Root { get; private set; }
 
 		public ICollection<ReservationBlock> ReservationBlocks { get; private set; }
 
@@ -36,22 +38,104 @@ namespace FdtSharp
 			var stringsOffset = (int)Utilities.ReadUintBigEndian(treeData, 12);
 			var stringsSize = (int)Utilities.ReadUintBigEndian(treeData, 32);
 			var stringsData = new ArraySegment<byte>(treeData, stringsOffset, stringsSize);
+			var stringHelper = new StringHelper(stringsData);
 
 			var reservationBlockOffset = (int)Utilities.ReadUintBigEndian(treeData, 16);
 			ReadMemoryReservationBlocks(treeData, reservationBlockOffset);
+
+			var structureOffset = (int)Utilities.ReadUintBigEndian(treeData, 8);
+			// TODO: check with tree size
+			ReadStructureData(treeData, structureOffset, stringHelper);
 		}
 
 		private void ReadMemoryReservationBlocks(byte[] treeData, int reservationBlockOffset)
 		{
 			ReservationBlock currentBlock;
-			do
+			while(true)
 			{
 				currentBlock = new ReservationBlock(Utilities.ReadUlongBigEndian(treeData, reservationBlockOffset),
 					Utilities.ReadUlongBigEndian(treeData, reservationBlockOffset + 8));
 				reservationBlockOffset += 16;
+				if(currentBlock == default(ReservationBlock))
+				{
+					break;
+				}
 				ReservationBlocks.Add(currentBlock);
 			}
-			while(currentBlock != default(ReservationBlock));
+		}
+
+		private void ReadStructureData(byte[] treeData, int structureOffset, StringHelper stringHelper)
+		{
+			var currentOffset = structureOffset;
+			while(true)
+			{
+				// TODO: padding
+				var token = ReadToken(treeData, currentOffset);
+				switch(token)
+				{
+				case Token.BeginNode:
+					break;
+				case Token.End:
+					return;
+				default:
+					throw new InvalidOperationException(string.Format("Unexpected token {0} when BeginNode or End expected.", token));
+				}
+				Root = new TreeNode();
+				currentOffset += 4;
+				var nodeName = Utilities.ReadNullTerminatedString(treeData, ref currentOffset);
+				Root.Name = nodeName;
+				Pad(ref currentOffset);
+				ParseNode(Root, treeData, ref currentOffset, stringHelper);
+			}
+		}
+
+		private void ParseNode(TreeNode treeNode, byte[] treeData, ref int currentOffset, StringHelper stringHelper)
+		{
+			while(true)
+			{
+				var token = ReadToken(treeData, currentOffset);
+				currentOffset += 4;
+				switch(token)
+				{
+				case Token.EndNode:
+					return;
+				case Token.Property:
+					var length = (int)Utilities.ReadUintBigEndian(treeData, currentOffset);
+					currentOffset += 4;
+					var nameOffset = Utilities.ReadUintBigEndian(treeData, currentOffset);
+					currentOffset += 4;
+					var name = stringHelper.GetString((int)nameOffset);
+					var data = new byte[length];
+					Array.Copy(treeData, currentOffset, data, 0, length);
+					var property = new Property(name, data);
+					treeNode.Properties.Add(property);
+					currentOffset += length;
+					Pad(ref currentOffset);
+					break;
+				case Token.BeginNode:
+					var nodeName = Utilities.ReadNullTerminatedString(treeData, ref currentOffset);
+					Pad(ref currentOffset);
+					var subnode = new TreeNode { Name = nodeName };
+					treeNode.Subnodes.Add(subnode);
+					ParseNode(subnode, treeData, ref currentOffset, stringHelper);
+					break;
+				case Token.Nop:
+					break;
+				default:
+					throw new InvalidOperationException(string.Format("Unexpected token {0} during node parsing.", token));
+				}
+			}
+
+		}
+
+		private static void Pad(ref int value)
+		{
+			value = 4 * (value / 4) + ((value % 4 > 0) ? 4 : 0);
+		}
+
+		private static Token ReadToken(byte[] data, int offset)
+		{
+			return (Token)Utilities.ReadUintBigEndian(data, offset);
 		}
 
 		private const uint Magic = 0xd00dfeed;

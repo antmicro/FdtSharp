@@ -34,8 +34,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="OpeningTests.cs" />
     <Compile Include="Utilities.cs" />
+    <Compile Include="ReadingTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -35,6 +35,10 @@
     <Compile Include="FlattenDeviceTree.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="ReservationBlock.cs" />
+    <Compile Include="Token.cs" />
+    <Compile Include="Property.cs" />
+    <Compile Include="TreeNode.cs" />
+    <Compile Include="StringHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
