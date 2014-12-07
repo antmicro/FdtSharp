@@ -8,7 +8,9 @@ namespace FdtSharp
 		public FlattenDeviceTree()
 		{
 			ReservationBlocks = new List<ReservationBlock>();
-
+			Version = 17;
+			LastCompatibleVersion = 16;
+			Root = new TreeNode();
 		}
 
 		public FlattenDeviceTree(byte[] treeData) : this()
