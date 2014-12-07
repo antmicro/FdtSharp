@@ -16,6 +16,7 @@ Manipulate the tree by adding, changing and removing nodes and properties and wr
 Reading
 -------
 ::
+
     var blob = File.ReadAllBytes(file.dtb); // or any other way you need
     var fdt = new FlattenedDeviceTree(binaryBlob);
     // fdt is now ready to be manipulated
@@ -23,6 +24,7 @@ Reading
 Writing
 -------
 ::
+
     var fdt = new FlattenedDeviceTree(); // you can also use existing blob
     ... // fdt manipulation
     var outputBlob = fdt.GetBinaryBlob();
