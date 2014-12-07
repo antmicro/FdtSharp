@@ -33,8 +33,6 @@ namespace FdtSharp
 			WriteTreeNode(treeStructure, Root, stringWriter, true);
 			var reservationBlocks = WriteReservationBlocks();
 			var stringData = stringWriter.Result;
-			var originalStringDataLength = stringData.Count;
-			Pad(stringData);
 
 			var result = new List<byte>();
 			result.AddRange(Magic.BigEndian());
@@ -46,7 +44,7 @@ namespace FdtSharp
 			result.AddRange(Version.BigEndian());
 			result.AddRange(LastCompatibleVersion.BigEndian());
 			result.AddRange(BootCPUPhysicalId.BigEndian());
-			result.AddRange(((uint)originalStringDataLength).BigEndian());
+			result.AddRange(((uint)stringData.Count).BigEndian());
 			result.AddRange(((uint)treeStructure.Count).BigEndian());
 
 			result.AddRange(reservationBlocks);
