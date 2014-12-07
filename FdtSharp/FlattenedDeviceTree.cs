@@ -23,7 +23,7 @@ namespace FdtSharp
 		public uint Version { get; private set; }
 		public uint LastCompatibleVersion { get; private set; }
 		public uint BootCPUPhysicalId { get; set; }
-		public TreeNode Root { get; set; }
+		public TreeNode Root { get; private set; }
 		public ICollection<ReservationBlock> ReservationBlocks { get; private set; }
 
 		public byte[] GetBinaryBlob()
