@@ -26,6 +26,17 @@ namespace FdtSharp
 			{
 				return alreadyWritten[str];
 			}
+			// our string can also be a substring of some another string
+			foreach(var cached in alreadyWritten)
+			{
+				var subIndex = cached.Key.IndexOf(str, StringComparison.Ordinal);
+				if(subIndex != -1 && subIndex + str.Length == cached.Key.Length)
+				{
+					var newStringIndex = cached.Value + subIndex;
+					alreadyWritten.Add(str, newStringIndex);
+					return newStringIndex;
+				}
+			}
 			var index = result.Count;
 			alreadyWritten.Add(str, index);
 			result.AddRange(str.NullTerminated());
