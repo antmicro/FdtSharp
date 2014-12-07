@@ -15,17 +15,16 @@ namespace FdtSharp
 
 		public FlattenDeviceTree(byte[] treeData) : this()
 		{
-			ReadHeader(treeData);
+			ReadTree(treeData);
 		}
 
 		public uint Version { get; private set; }
 		public uint LastCompatibleVersion { get; private set; }
 		public uint BootCPUPhysicalId { get; set; }
 		public TreeNode Root { get; set; }
-
 		public ICollection<ReservationBlock> ReservationBlocks { get; private set; }
 
-		private void ReadHeader(byte[] treeData)
+		private void ReadTree(byte[] treeData)
 		{
 			var magic = Utilities.ReadUintBigEndian(treeData, 0);
 			if(magic != Magic)
@@ -39,7 +38,7 @@ namespace FdtSharp
 			var totalSize = Utilities.ReadUintBigEndian(treeData, 4);
 			if(treeData.Length < totalSize)
 			{
-				throw new NotImplementedException(
+				throw new InvalidOperationException(
 					string.Format("Given array is only {0} bytes long while the whole structure needs {1} bytes.", treeData.Length, totalSize));
 			}
 
