@@ -9,6 +9,7 @@ namespace FdtSharp
 		public StringWriter()
 		{
 			result = new List<byte>();
+			alreadyWritten = new Dictionary<string, int>();
 		}
 
 		public List<byte> Result
@@ -21,12 +22,18 @@ namespace FdtSharp
 
 		public int PutString(string str)
 		{
+			if(alreadyWritten.ContainsKey(str))
+			{
+				return alreadyWritten[str];
+			}
 			var index = result.Count;
+			alreadyWritten.Add(str, index);
 			result.AddRange(str.NullTerminated());
 			return index;
 		}
 
 		private readonly List<byte> result;
+		private readonly Dictionary<string, int> alreadyWritten;
 	}
 }
 
