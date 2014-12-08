@@ -14,9 +14,24 @@ namespace FdtSharp
 			this.Data = new ReadOnlyCollection<byte>(data);
 		}
 
+		public byte[] GetDataAsBytes()
+		{
+			return Data.ToArray();
+		}
+
+		public void PutDataAsBytes(byte[] data)
+		{
+			Data = new ReadOnlyCollection<byte>(data.ToArray());
+		}
+
 		public string GetDataAsString()
 		{
-			return Encoding.UTF8.GetString(Data.ToArray(), 0, Data.Count - 1);
+			return Encoding.UTF8.GetString(GetDataAsBytes(), 0, Data.Count - 1);
+		}
+
+		public void PutDataAsString(string data)
+		{
+			Data = new ReadOnlyCollection<byte>(data.NullTerminated());
 		}
 
 		public string Name { get; private set; }
