@@ -21,6 +21,18 @@ Reading
     var fdt = new FlattenedDeviceTree(binaryBlob);
     // fdt is now ready to be manipulated
 
+Manipulating
+------------
+After reading (or creation) the tree is just available to be used. You can
+access root node via the ``Root`` property and then each node contains two
+collections:
+- ``Subnodes`` - containing subnodes;
+- ``Properties`` - containing objects of class ``Property``.
+
+A ``Property`` is a general node entry (also called property in the
+specification) which has its name and data. Data is available as byte array or
+a null terminated string. Other useful types will be implemented when needed.
+
 Writing
 -------
 ::
