@@ -15,30 +15,32 @@ Manipulate the tree by adding, changing and removing nodes and properties and wr
 
 Reading
 -------
-::
+
+To read the FDT file, use::
 
     var blob = File.ReadAllBytes(file.dtb); // or any other way you need
     var fdt = new FlattenedDeviceTree(binaryBlob);
-    // fdt is now ready to be manipulated
 
 Manipulating
 ------------
-After reading (or creation) the tree is just available to be used. You can
-access root node via the ``Root`` property and then each node contains two
+
+For a newly created tree, or one just read from file, you can
+access the root node via the ``Root`` property; then each node contains two
 collections:
+
 - ``Subnodes`` - containing subnodes;
-- ``Properties`` - containing objects of class ``Property``.
+- ``Properties`` - containing objects of the ``Property`` class.
 
 A ``Property`` is a general node entry (also called property in the
-specification) which has its name and data. Data is available as byte array or
+specification) which has its name and data. Data is available as a byte array or
 a null terminated string. Other useful types will be implemented when needed.
 
 Writing
 -------
-::
 
-    var fdt = new FlattenedDeviceTree(); // you can also use existing blob
-    ... // fdt manipulation
+To write the tree into a file::
+
+    // fdt is a FlattenedDeviceTree object
     var outputBlob = fdt.GetBinaryBlob();
 
 License
