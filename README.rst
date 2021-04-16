@@ -1,5 +1,8 @@
-FdtSharp 0.1
-============
+========
+FdtSharp
+========
+
+Copyright (c) 2014-2021 `Antmicro <https://www.antmicro.com>`_
 
 A library to read and write Flattened Device Trees in their binary form.
 
