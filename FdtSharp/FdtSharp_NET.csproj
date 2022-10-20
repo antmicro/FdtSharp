@@ -2,5 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyName>FdtSharp</AssemblyName>
   </PropertyGroup>
 </Project>
